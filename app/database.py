@@ -1,7 +1,7 @@
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-# Firebase credentials directly in the code
+# Firebase credentials directly in the code (as you provided above)
 firebase_config = {
     "type": "service_account",
     "project_id": "hrmbot-3e3a7",
@@ -43,17 +43,28 @@ aIHHio05zgXTRP6eHUY19SBy
     "universe_domain": "googleapis.com"
 }
 
-try:
-    # Initialize Firebase
-    cred = credentials.Certificate(firebase_config)
+# Initialize Firebase
+cred = credentials.Certificate(firebase_config)
+firebase_admin.initialize_app(cred)
+db = firestore.client()
 
-    if not firebase_admin._apps:  # Prevent multiple initializations
-        firebase_admin.initialize_app(cred)
+# Add employee function
+def add_employee(employee_data):
+    try:
+        # Create a new document in the "employees" collection
+        employee_ref = db.collection('employees').add(employee_data)
+        print(f"Employee added with ID: {employee_ref.id}")
+        return employee_ref.id
+    except Exception as e:
+        print(f"Error adding employee: {e}")
 
-    db = firestore.client()
-    print("Firebase initialized successfully.")
+# Remove employee function
+def remove_employee(employee_id):
+    try:
+        # Get the employee document by ID
+        employee_ref = db.collection('employees').document(employee_id)
+        employee_ref.delete()
+        print(f"Employee with ID {employee_id} removed.")
+    except Exception as e:
+        print(f"Error removing employee: {e}")
 
-except firebase_admin.exceptions.FirebaseError as fe:
-    raise RuntimeError(f"Firebase SDK Initialization Error: {fe}")
-except Exception as e:
-    raise RuntimeError(f"Unexpected error occurred while initializing Firebase: {e}")
